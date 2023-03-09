@@ -1,6 +1,11 @@
+const serviceAccount = require("../serviceAccountKey.json");
 import * as functions from "firebase-functions";
-import { adminDb } from "./firebaseAdmin";
 import * as admin from "firebase-admin";
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
+
+const adminDb = admin.firestore();
 
 const fetchResults = async (id: string): Promise<unknown> => {
   const api_key = process.env.BRIGHTDATA_API_KEY;
@@ -24,15 +29,16 @@ const fetchResults = async (id: string): Promise<unknown> => {
 
 export const onScraperComplete = functions.https.onRequest(
   async (request, response) => {
-    console.log("SCRAPE COMPLETE >>> : ", request.body);
+    // console.log("SCRAPE COMPLETE >>> : ", request.body);
 
-    const { success, id } = request.body;
+    const { success, id, finished } = request.body;
 
     if (!success) {
       await adminDb.collection("searches").doc(id).set(
         {
           status: "error",
-          updatedAt: admin.firestore.Timestamp.now(),
+          //TODO: admin.firestore.Timestamp.now() is undefined
+          updatedAt: finished,
         },
         {
           merge: true,
@@ -45,12 +51,15 @@ export const onScraperComplete = functions.https.onRequest(
     await adminDb.collection("searches").doc(id).set(
       {
         status: "complete",
-        updatedAt: admin.firestore.Timestamp.now(),
+        //TODO: admin.firestore.Timestamp.now() is undefined
+        updatedAt: finished,
         results: data,
       }, {
         merge: true,
       }
     )
+
+    console.log("SCRAPE COMPLETE >>> : ", data);
 
     response.send("Scraping Function Complete");
   }
