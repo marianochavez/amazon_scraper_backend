@@ -20,7 +20,7 @@ const fetchResults = async (id: string): Promise<unknown> => {
   const data = await res.json();
 
   if (data.status === "building" || data.status === "collecting") {
-    console.log("NOT COMPETE YET, TRYING AGAIN...");
+    // console.log("NOT COMPLETE YET, TRYING AGAIN...");
     return fetchResults(id);
   }
 
@@ -59,7 +59,7 @@ export const onScraperComplete = functions.https.onRequest(
       }
     )
 
-    console.log("SCRAPE COMPLETE >>> : ", data);
+    // console.log("SCRAPE COMPLETE >>> : ", data);
 
     response.send("Scraping Function Complete");
   }
